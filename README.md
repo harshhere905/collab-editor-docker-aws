@@ -60,34 +60,36 @@ Multiple users can edit the same document simultaneously with **conflict-free sy
 
 # 📸 Screenshots
 
-## Multiple Users Connected
+# 📸 Screenshots
+
+## 👥 Multiple Users Connected
 
 Two users connected from different browser sessions.
 
 <p align="center">
-<img src="./screenshots/users-connected.png" width="900">
+  <img src="./images/user-1.png" width="48%" alt="User 1">
+  <img src="./images/user-2.png" width="48%" alt="User 2">
 </p>
 
 ---
 
-## Real-Time Synchronization
+## ⚡ Real-Time Synchronization
 
 Typing from one browser instantly appears in every connected client.
 
 <p align="center">
-<img src="./screenshots/realtime-sync.png" width="900">
+  <img src="./images/sync.png" width="48%" alt="Editor">
 </p>
 
 ---
 
-## AWS Deployment
+## ☁️ AWS Deployment
 
-Application running inside Docker containers on ECS Fargate behind an Application Load Balancer.
+Application running inside Docker containers on Amazon ECS Fargate behind an Application Load Balancer.
 
 <p align="center">
-<img src="./screenshots/aws-deployment.png" width="900">
+  <img src="./images/aws-deployment.png" width="95%" alt="AWS ECS Deployment">
 </p>
-
 ---
 
 # 🎥 Demo
