@@ -60,16 +60,22 @@ Multiple users can edit the same document simultaneously with **conflict-free sy
 
 # 📸 Screenshots
 
-# 📸 Screenshots
-
 ## 👥 Multiple Users Connected
 
-Two users connected from different browser sessions.
+Two users connected from different browser sessions — **User 1** on **Microsoft Edge** and **User 2** on **Google Chrome**.
 
-<p align="center">
-  <img src="./images/user-1.png" width="48%" alt="User 1">
-  <img src="./images/user-2.png" width="48%" alt="User 2">
-</p>
+<table align="center">
+  <tr>
+    <td align="center" width="50%">
+      <img src="./images/user-1.png" width="100%" alt="User 1 - Microsoft Edge"><br>
+      <sub><b>User 1 — Google Chrome</b></sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="./images/user-2.png" width="100%" alt="User 2 - Google Chrome"><br>
+      <sub><b>User 2 — Microsoft Edge</b></sub>
+    </td>
+  </tr>
+</table>
 
 ---
 
@@ -78,7 +84,7 @@ Two users connected from different browser sessions.
 Typing from one browser instantly appears in every connected client.
 
 <p align="center">
-  <img src="./images/sync.png" width="48%" alt="Editor">
+  <img src="./images/sync.png" width="70%" alt="Editor">
 </p>
 
 ---
@@ -90,6 +96,7 @@ Application running inside Docker containers on Amazon ECS Fargate behind an App
 <p align="center">
   <img src="./images/aws-deployment.png" width="95%" alt="AWS ECS Deployment">
 </p>
+
 ---
 
 # 🎥 Demo
