@@ -1,267 +1,326 @@
-# Collab Editor — Docker & AWS Deployment
+# 🚀 Real-Time Collaborative Editor
+### Dockerized Deployment on AWS ECS Fargate
 
-A real-time collaborative text editor (Google Docs / Figma style) built to learn and practice **containerization with Docker** and **production deployment on AWS**. Multiple users can edit the same document at the same time, with conflict-free sync powered by CRDTs.
+<p align="center">
 
-> **Note:** This is a learning-focused project. The main goal was not to build a feature-complete product, but to understand and implement a real Docker + AWS deployment pipeline end to end — from writing a Dockerfile to running a live container behind a load balancer on ECS Fargate.
+![React](https://img.shields.io/badge/React-Frontend-61DAFB?logo=react)
+![Node.js](https://img.shields.io/badge/Node.js-Backend-339933?logo=node.js)
+![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?logo=docker)
+![AWS](https://img.shields.io/badge/AWS-ECS%20Fargate-FF9900?logo=amazonaws)
+![Socket.io](https://img.shields.io/badge/Socket.io-Realtime-black?logo=socket.io)
+![Yjs](https://img.shields.io/badge/Yjs-CRDT-purple)
+
+</p>
+
+A real-time collaborative editor (similar to Google Docs / Figma) built to learn **Docker containerization** and **production deployment on AWS**.
+
+Multiple users can edit the same document simultaneously with **conflict-free synchronization** powered by **Yjs (CRDT)** and **Socket.io**.
+
+> **Project Goal**
+>
+> The primary objective of this project was to understand how a full-stack application moves from local development to a production deployment using Docker, Amazon ECR, ECS Fargate and an Application Load Balancer.
 
 ---
 
-## Table of contents
+# 📑 Table of Contents
 
-- [Tech stack](#tech-stack)
-- [Architecture](#architecture)
-  - [Full pipeline at a glance](#full-pipeline-at-a-glance)
-  - [Phase-by-phase breakdown](#phase-1--development)
-- [Features](#features)
-- [What this project demonstrates](#what-this-project-demonstrates)
-- [Getting started (local)](#getting-started-local)
-- [Running with Docker](#running-with-docker)
-- [Deploying to AWS](#deploying-to-aws-high-level)
-- [Security notes](#security-notes)
-- [Possible improvements](#possible-improvements)
-- [Status](#status)
+- Tech Stack
+- Screenshots
+- Demo
+- Features
+- Architecture
+- Project Workflow
+- What This Project Demonstrates
+- Running Locally
+- Running with Docker
+- AWS Deployment
+- Security
+- Challenges Faced
+- Future Improvements
+- Status
 
 ---
 
-## Tech stack
+# 🛠 Tech Stack
 
 | Layer | Technology |
-|---|---|
-| Frontend | React.js + Monaco Editor |
-| Backend | Node.js + Express.js |
-| Real-time sync | Socket.io + Yjs (CRDT) |
-| Containerization | Docker (multi-stage build) |
-| Container registry | Amazon ECR |
-| Container orchestration | Amazon ECS (Fargate launch type) |
-| Traffic routing | Application Load Balancer (ALB) + Target Groups |
-| Access control | IAM (scoped ECS/ECR permissions), Security Groups |
+|------|-------------|
+| Frontend | React.js |
+| Editor | Monaco Editor |
+| Backend | Node.js + Express |
+| Real-time | Socket.io |
+| Conflict Resolution | Yjs (CRDT) |
+| Containerization | Docker |
+| Registry | Amazon ECR |
+| Orchestration | Amazon ECS Fargate |
+| Load Balancer | AWS ALB |
+| Security | IAM + Security Groups |
 
 ---
 
-## Architecture
+# 📸 Screenshots
 
-The project goes through six phases, from writing code to handling a live user request in production.
+## Multiple Users Connected
 
-### Full pipeline at a glance
+Two users connected from different browser sessions.
 
-```
- DEVELOPMENT                          CONTAINERIZATION
- ┌────────────────────────┐          ┌───────────────────────────┐
- │ React + Monaco editor   │          │ Dockerfile (FROM, WORKDIR, │
- │        ↓                │          │ COPY, RUN, CMD)            │
- │ Express backend         │          │        ↓                   │
- │        ↓                │   ──▶    │ Multi-stage build          │
- │ Socket.io + Yjs (CRDT)  │          │        ↓                   │
- │        ↓                │          │ Non-root user               │
- │ npm run build → dist    │          │        ↓                   │
- │        ↓                │          │ Docker image                │
- │ Express serves dist     │          └───────────────────────────┘
- └────────────────────────┘                        │
-                                                     ▼
- AWS STORAGE & INFRA SETUP                 DEPLOYMENT
- ┌────────────────────────┐          ┌───────────────────────────┐
- │ Image pushed to ECR     │          │ ECS Fargate runs container │
- │        ↓                │   ──▶    │        ↓                   │
- │ ┌─IAM user             │          │ ALB + Target Group attached│
- │ ├─Security groups       │          └───────────────────────────┘
- │ └─Task Definition       │                        │
- └────────────────────────┘                        ▼
-                                       RUNTIME (a real user request)
-                              ┌─────────────────────────────────────┐
-                              │ User sends request (HTTP/WebSocket)  │
-                              │        ↓                             │
-                              │ ALB → Target Group → container       │
-                              │        ↓                             │
-                              │ Express handles it:                  │
-                              │   • static file  → dist              │
-                              │   • API call     → backend route     │
-                              │   • real-time    → Socket.io + Yjs   │
-                              │        ↓                             │
-                              │ Response sent back to browser        │
-                              └─────────────────────────────────────┘
-```
+<p align="center">
+<img src="./screenshots/users-connected.png" width="900">
+</p>
 
-### Phase 1 — Development
+---
 
-```
-React frontend + Monaco editor (editor UI in the browser)
-        │
-        ▼
-Express backend (Node.js API server)
-        │
-        ▼
-Socket.io + Yjs joined in (adds real-time CRDT sync)
-        │
-        ▼
-npm run build (bundles React into a "dist" folder)
-        │
-        ▼
-Express serves "dist" as static files
-(frontend + backend now run on the same origin/port)
-```
+## Real-Time Synchronization
 
-### Phase 2 — Containerization
+Typing from one browser instantly appears in every connected client.
+
+<p align="center">
+<img src="./screenshots/realtime-sync.png" width="900">
+</p>
+
+---
+
+## AWS Deployment
+
+Application running inside Docker containers on ECS Fargate behind an Application Load Balancer.
+
+<p align="center">
+<img src="./screenshots/aws-deployment.png" width="900">
+</p>
+
+---
+
+# 🎥 Demo
+
+The application supports:
+
+- Real-time collaborative editing
+- Multiple connected users
+- Live synchronization
+- Conflict-free editing using CRDT
+- Dockerized deployment on AWS
+
+---
+
+# ✨ Features
+
+- Real-time collaborative editing
+- Multiple users editing the same document
+- Conflict-free synchronization using **Yjs (CRDT)**
+- Monaco Editor integration
+- Socket.io based communication
+- Single Docker container deployment
+- Frontend and backend served from the same origin
+
+---
+
+# 🏗 Architecture
 
 ```
-Dockerfile written (FROM, WORKDIR, COPY, RUN, CMD)
-        │
-        ▼
-Multi-stage build (keeps the final image lightweight)
-        │
-        ▼
-Non-root user configured (security best practice)
-        │
-        ▼
-Docker image produced (the whole app packaged into one image)
-```
-
-### Phase 3 — AWS storage
-
-```
-Docker image pushed to Amazon ECR
-        │
-        ▼
-Image stored safely in ECR (AWS's version of Docker Hub)
-```
-
-### Phase 4 — Infrastructure setup
-
-These three are typically set up in parallel, ahead of deployment:
-
-```
-        ┌── IAM user (ECS + ECR scoped permissions)
-Image → ├── Security groups (which ports are open)
-        └── Task Definition (image, CPU/RAM, container port)
-```
-
-### Phase 5 — Deployment
-
-```
-ECS pulls the image from ECR using the Task Definition
-        │
-        ▼
-Fargate runs it as a container (serverless — no EC2 server to manage)
-        │
-        ▼
-Application Load Balancer (ALB) placed in front of the container
-        │
-        ▼
-Target Group created (tells the ALB where to send traffic)
-```
-
-### Phase 6 — Runtime (a real user request)
-
-```
-User opens the app URL in the browser
-        │
-        ▼
-Request reaches the ALB
-        │
-        ▼
-ALB → Target Group → routed to a healthy container
-        │
-        ▼
-Inside the container, Express handles the request:
-   • Static file needed?  → served from the "dist" folder
-   • API call?            → backend route/controller runs
-   • Real-time edit?      → Socket.io + Yjs sync the change
-        │
-        ▼
-Response sent back to the user's browser via the same path
+Browser
+      │
+      ▼
+Application Load Balancer
+      │
+      ▼
+ECS Fargate Container
+      │
+      ├──────── Express Server
+      │
+      ├──────── React Static Build
+      │
+      └──────── Socket.io + Yjs
+                   │
+                   ▼
+          Real-time Synchronization
 ```
 
 ---
 
-## Features
+# ⚙ Project Workflow
 
-- Real-time multi-user document editing with conflict resolution via **Yjs (CRDT)**
-- Live cursor/edit sync using **Socket.io**
-- Monaco Editor (the same editor that powers VS Code) for a familiar coding/writing experience
-- Single-container deployment — frontend and backend served together
+```
+React + Monaco
+        │
+        ▼
+Express Backend
+        │
+        ▼
+Socket.io + Yjs
+        │
+        ▼
+Docker Multi-stage Build
+        │
+        ▼
+Docker Image
+        │
+        ▼
+Amazon ECR
+        │
+        ▼
+ECS Task Definition
+        │
+        ▼
+Amazon ECS Fargate
+        │
+        ▼
+Application Load Balancer
+        │
+        ▼
+Live Production Application
+```
 
 ---
 
-## What this project demonstrates
+# 📚 What This Project Demonstrates
 
-- Writing a production-ready, **multi-stage Dockerfile** (`FROM`, `WORKDIR`, `COPY`, `RUN`, `CMD`) to keep image size small
-- Running containers as a **non-root user** for better security
-- Bundling a React app and serving it through an Express backend on the same origin
-- Pushing images to **Amazon ECR**
-- Writing an ECS **Task Definition** and deploying it to **Fargate**
-- Configuring **IAM users/roles** with least-privilege ECS/ECR permissions
-- Setting up **Security Groups** to control inbound/outbound traffic
-- Using an **Application Load Balancer** with a **Target Group** to route traffic to running containers
+This project demonstrates practical knowledge of:
+
+- Docker multi-stage builds
+- Docker image optimization
+- Serving React through Express
+- Container networking
+- Amazon ECR
+- ECS Task Definitions
+- ECS Fargate deployments
+- Application Load Balancers
+- Target Groups
+- IAM Roles & Policies
+- Security Groups
+- WebSocket communication in production
+- Real-time synchronization using CRDTs
 
 ---
 
-## Getting started (local)
+# 💻 Running Locally
 
 ```bash
-# clone the repo
 git clone https://github.com/<your-username>/collab-editor-docker-aws.git
+
 cd collab-editor-docker-aws
 
-# install dependencies (frontend + backend)
+cd Frontend
 npm install
 
-# build the React frontend
-npm run build
-
-# start the Express server (serves frontend + backend + sockets)
-npm start
+cd ../Backend
+npm install
 ```
 
-App will be available at `http://localhost:<PORT>`.
+Run both frontend and backend locally.
 
 ---
 
-## Running with Docker
+# 🐳 Running with Docker
 
 ```bash
-# build the image
 docker build -t collab-editor .
 
-# run the container
 docker run -p 3000:3000 collab-editor
 ```
 
 ---
 
-## Deploying to AWS (high level)
+# ☁ Deploying to AWS
 
-1. Build and tag the Docker image locally.
-2. Authenticate Docker to ECR and push the image:
-   ```bash
-   aws ecr get-login-password --region <region> | docker login --username AWS --password-stdin <account-id>.dkr.ecr.<region>.amazonaws.com
-   docker tag collab-editor:latest <account-id>.dkr.ecr.<region>.amazonaws.com/collab-editor:latest
-   docker push <account-id>.dkr.ecr.<region>.amazonaws.com/collab-editor:latest
-   ```
-3. Create an ECS **Task Definition** pointing to the ECR image (set CPU/memory, container port, IAM execution role).
-4. Create an ECS **Fargate Service** using that task definition.
-5. Attach an **Application Load Balancer** with a **Target Group** to route traffic to the running tasks.
-6. Configure **Security Groups** to allow traffic on the required ports (e.g. 80/443 → container port).
+1. Build Docker image
 
----
+```bash
+docker build -t collab-editor .
+```
 
-## Security notes
+2. Push image to Amazon ECR
 
-- Container runs as a **non-root user** inside the Dockerfile — reduces blast radius if the container is ever compromised.
-- **Multi-stage build** keeps build tools and dev dependencies out of the final image, shrinking the attack surface.
-- **IAM user/role** for ECS is scoped to only the ECS + ECR permissions it needs — not broad admin access.
-- **Security Groups** restrict inbound traffic to only the required ports (e.g. 80/443 to the ALB, and the ALB to the container port).
-- Secrets (API keys, DB credentials, etc., if added later) should go into **AWS Secrets Manager** or **SSM Parameter Store**, not hardcoded in the Dockerfile or repo.
+```bash
+docker tag collab-editor:latest <account-id>.dkr.ecr.<region>.amazonaws.com/collab-editor
 
----
+docker push <account-id>.dkr.ecr.<region>.amazonaws.com/collab-editor
+```
 
-## Possible improvements
+3. Create ECS Task Definition
 
-- [ ] Add a database (e.g. MongoDB/PostgreSQL) for persistent document storage
-- [ ] Add authentication (currently anyone with the link can edit)
-- [ ] Set up CI/CD (GitHub Actions) to auto-build and push to ECR on merge
-- [ ] Add auto-scaling policies on the ECS service based on CPU/memory
-- [ ] Add HTTPS via ACM certificate on the ALB
-- [ ] Add CloudWatch logging/alarms for the running tasks
+4. Create ECS Fargate Service
+
+5. Attach Application Load Balancer
+
+6. Configure Target Group
+
+7. Configure Security Groups
 
 ---
 
-🎯 Built primarily as a hands-on learning project for Docker containerization and AWS deployment (ECR, ECS Fargate, ALB). The live deployment may be taken down periodically to avoid ongoing AWS charges — the code and architecture remain fully functional and reproducible.
+# 🔐 Security
+
+- Multi-stage Docker build
+- Non-root container user
+- Least-privilege IAM roles
+- Security Groups
+- Frontend & backend served from same origin
+- Ready for Secrets Manager / Parameter Store integration
+
+---
+
+# 🧩 Challenges Faced
+
+During deployment several production issues were encountered and resolved.
+
+- Debugging WebSocket failures caused by hardcoded localhost URLs
+- Multi-stage Docker build issues
+- Serving React static files through Express
+- Docker image versioning
+- ECS Task Definition revisions
+- Updating running ECS services
+- Application Load Balancer configuration
+- Socket.io communication through AWS infrastructure
+
+These debugging experiences provided hands-on exposure to real production deployment workflows beyond local development.
+
+---
+
+# 🚀 Future Improvements
+
+- Persistent document storage (MongoDB/PostgreSQL)
+- Authentication & authorization
+- GitHub Actions CI/CD pipeline
+- HTTPS using ACM
+- CloudWatch monitoring
+- Auto Scaling
+- Custom domain
+- Document history
+- Cursor presence
+- User avatars
+
+---
+
+# 📌 Status
+
+✅ Project completed successfully.
+
+The application has been:
+
+- Dockerized
+- Deployed on Amazon ECS Fargate
+- Connected through an Application Load Balancer
+- Tested with multiple simultaneous users
+- Successfully synchronized in real time using Socket.io + Yjs
+
+> **Note:**  
+> The live deployment may be taken down periodically to avoid AWS infrastructure costs. The project remains fully reproducible using the provided Dockerfile and deployment instructions.
+
+---
+
+## ⭐ Learning Outcome
+
+This project provided practical experience with:
+
+- Docker
+- Containerized application architecture
+- AWS ECR
+- ECS Fargate
+- Application Load Balancer
+- IAM
+- Production debugging
+- WebSockets
+- Real-time collaboration systems
+- CRDT-based synchronization
+
+Instead of only learning these technologies theoretically, this project involved deploying, debugging, and operating a real production workload on AWS.
